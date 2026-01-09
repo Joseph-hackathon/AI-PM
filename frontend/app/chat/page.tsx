@@ -4,11 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Send, Bot, User } from "lucide-react";
 
+interface ChatMessage {
+  id: number;
+  role: "user" | "assistant";
+  content: string;
+}
+
 export default function ChatPage() {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
-      role: "assistant" as const,
+      role: "assistant",
       content: "Hello! I'm your AI Product Manager Assistant. I can help you with product strategy, idea evaluation, trend analysis, and more.",
     },
   ]);
@@ -17,9 +23,9 @@ export default function ChatPage() {
   const handleSend = () => {
     if (!input.trim()) return;
 
-    const userMessage = {
+    const userMessage: ChatMessage = {
       id: messages.length + 1,
-      role: "user" as const,
+      role: "user",
       content: input,
     };
 
@@ -28,9 +34,9 @@ export default function ChatPage() {
 
     // Simulate AI response
     setTimeout(() => {
-      const aiMessage = {
+      const aiMessage: ChatMessage = {
         id: messages.length + 2,
-        role: "assistant" as const,
+        role: "assistant",
         content: "Great question! Let me analyze this for you. (In the actual implementation, responses are generated via OpenAI API.)",
       };
       setMessages((prev) => [...prev, userMessage, aiMessage]);
