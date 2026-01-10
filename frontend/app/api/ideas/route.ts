@@ -17,12 +17,13 @@ export async function GET(request: NextRequest) {
     ];
 
     return NextResponse.json({ ideas, total: ideas.length });
-  } catch (error) {
-      return NextResponse.json(
-        {
-          error: error.message || "An error occurred while fetching ideas.",
-        },
-        { status: 500 }
-      );
+  } catch (error: any) {
+    console.error("Ideas API error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "An error occurred while fetching ideas.",
+      },
+      { status: 500 }
+    );
   }
 }

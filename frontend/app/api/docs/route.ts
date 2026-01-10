@@ -14,12 +14,13 @@ export async function GET(request: NextRequest) {
     ];
 
     return NextResponse.json({ documents, total: documents.length });
-  } catch (error) {
-      return NextResponse.json(
-        {
-          error: error.message || "An error occurred while fetching documents.",
-        },
-        { status: 500 }
-      );
+  } catch (error: any) {
+    console.error("Documents API error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "An error occurred while fetching documents.",
+      },
+      { status: 500 }
+    );
   }
 }

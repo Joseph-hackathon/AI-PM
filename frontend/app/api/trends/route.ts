@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const dynamic = 'force-dynamic';
+
 // Mock trend data
 const mockTrends = [
   {

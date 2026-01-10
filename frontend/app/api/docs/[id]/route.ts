@@ -17,12 +17,13 @@ export async function GET(
     };
 
     return NextResponse.json(document);
-  } catch (error) {
-      return NextResponse.json(
-        {
-          error: error.message || "An error occurred while fetching the document.",
-        },
-        { status: 500 }
-      );
+  } catch (error: any) {
+    console.error("Document API error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "An error occurred while fetching the document.",
+      },
+      { status: 500 }
+    );
   }
 }

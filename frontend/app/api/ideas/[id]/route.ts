@@ -20,13 +20,14 @@ export async function GET(
     };
 
     return NextResponse.json(idea);
-  } catch (error) {
-      return NextResponse.json(
-        {
-          error: error.message || "An error occurred while fetching the idea.",
-        },
-        { status: 500 }
-      );
+  } catch (error: any) {
+    console.error("Idea API error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "An error occurred while fetching the idea.",
+      },
+      { status: 500 }
+    );
   }
 }
 
@@ -53,13 +54,13 @@ export async function POST(
       score,
       evaluatedAt: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error("아이디어 점수화 오류:", error);
-      return NextResponse.json(
-        {
-          error: error.message || "An error occurred while scoring the idea.",
-        },
-        { status: 500 }
-      );
+  } catch (error: any) {
+    console.error("Idea scoring error:", error);
+    return NextResponse.json(
+      {
+        error: error.message || "An error occurred while scoring the idea.",
+      },
+      { status: 500 }
+    );
   }
 }
