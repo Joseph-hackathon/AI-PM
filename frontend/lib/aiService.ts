@@ -21,82 +21,95 @@ export const generateIdeasWithAI = async (
   context?: string
 ): Promise<any[]> => {
   if (!openai) {
-    // 모의 응답
-    return Array.from({ length: Math.min(count, 5) }, (_, i) =>
-      createMockResponse("idea", {
-        id: i + 1,
-        title: `Product Idea ${i + 1} based on ${trends.join(" + ")}`,
-        description: `This is an innovative product concept combining ${trends.join(", ")} trends.`,
-        trends,
-        painPoints: ["User pain point 1", "User pain point 2"],
-        features: ["Key feature 1", "Key feature 2"],
-        revenueModel: "Subscription-based / Transaction fees",
-        competitiveAlternatives: ["Existing solution 1", "Existing solution 2"],
-      })
-    );
+    console.error("OpenAI API key is not set. Please set OPENAI_API_KEY environment variable.");
+    throw new Error("OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable in Vercel dashboard.");
   }
 
   try {
+    console.log("Calling OpenAI API for idea generation...");
     const prompt = `Generate ${count} product ideas based on the following trends:
 Trends: ${trends.join(", ")}
 ${context ? `Additional context: ${context}` : ""}
 
-Return each idea as a JSON array in the following format:
-[
-  {
-    "title": "Product name",
-    "description": "One sentence description",
-    "painPoints": ["User problem 1", "User problem 2"],
-    "features": ["Key feature 1", "Key feature 2"],
-    "revenueModel": "Revenue model",
-    "competitiveAlternatives": ["Competing solution 1", "Competing solution 2"]
-  }
-]`;
+Return a JSON object with an "ideas" array in the following format:
+{
+  "ideas": [
+    {
+      "title": "Product name",
+      "description": "One sentence description",
+      "painPoints": ["User problem 1", "User problem 2"],
+      "features": ["Key feature 1", "Key feature 2"],
+      "revenueModel": "Revenue model",
+      "competitiveAlternatives": ["Competing solution 1", "Competing solution 2"]
+    }
+  ]
+}`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are an expert in 2026 tech and crypto trends and a product manager. You generate innovative and actionable product ideas.",
+            "You are an expert in 2026 tech and crypto trends and a product manager. You generate innovative and actionable product ideas. Always return valid JSON with an 'ideas' array.",
         },
         { role: "user", content: prompt },
       ],
       temperature: 0.8,
+      response_format: { type: "json_object" },
+      max_tokens: 3000,
     });
+    
+    console.log("OpenAI API call completed");
 
-    const content = completion.choices[0]?.message?.content || "[]";
-    let ideas;
+    const content = completion.choices[0]?.message?.content || '{"ideas": []}';
+    console.log("Received content from OpenAI:", content.substring(0, 200));
+    
+    let result;
     try {
-      ideas = JSON.parse(content);
-      if (!Array.isArray(ideas)) {
-        // If response is wrapped in an object, try to extract the array
-        if (ideas.ideas && Array.isArray(ideas.ideas)) {
-          ideas = ideas.ideas;
-        } else {
-          throw new Error("Invalid response format");
-        }
-      }
+      result = JSON.parse(content);
     } catch (parseError) {
-      console.error("JSON parse error:", parseError);
-      // Try to extract JSON from markdown code blocks
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      console.error("JSON parse error:", parseError, "Content:", content);
+      // Try to extract JSON object
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        ideas = JSON.parse(jsonMatch[0]);
+        try {
+          result = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          throw new Error("Failed to parse AI response.");
+        }
       } else {
-        throw new Error("Failed to parse AI response");
+        throw new Error("Failed to parse AI response.");
       }
     }
+    
+    const ideas = result.ideas || (Array.isArray(result) ? result : []);
+    
+    if (!Array.isArray(ideas) || ideas.length === 0) {
+      throw new Error("No ideas were generated. Please try again.");
+    }
 
+    console.log("Successfully parsed", ideas.length, "ideas");
     return ideas.map((idea: any, index: number) => ({
       id: index + 1,
       ...idea,
       trends,
     }));
-  } catch (error) {
+  } catch (error: any) {
     console.error("OpenAI API error:", error);
-    throw new Error("Failed to generate ideas.");
+    console.error("Error type:", error?.constructor?.name);
+    console.error("Error message:", error?.message);
+    console.error("Error stack:", error?.stack);
+    
+    if (error?.status === 401 || error?.message?.includes("API key")) {
+      throw new Error("Invalid OpenAI API key. Please check your OPENAI_API_KEY environment variable.");
+    } else if (error?.status === 429 || error?.message?.includes("rate limit")) {
+      throw new Error("OpenAI API rate limit exceeded. Please wait a moment and try again.");
+    } else if (error?.status === 500) {
+      throw new Error("OpenAI API server error. Please try again later.");
+    } else {
+      throw new Error(error?.message || "Failed to generate ideas. Please try again.");
+    }
   }
 };
 

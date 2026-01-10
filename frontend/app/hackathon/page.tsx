@@ -50,7 +50,12 @@ export default function HackathonPage() {
       const data = await response.json();
       setHackathonInfo(data.hackathonInfo);
     } catch (err: any) {
-      setError(err.message || "An error occurred while researching the hackathon.");
+      const errorMessage = err.message || "An error occurred while researching the hackathon.";
+      if (errorMessage.includes("rate limit") || errorMessage.includes("429")) {
+        setError("API 요청 한도에 도달했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
@@ -78,7 +83,12 @@ export default function HackathonPage() {
       const data = await response.json();
       setIdeas(data.ideas || []);
     } catch (err: any) {
-      setError(err.message || "An error occurred while generating ideas.");
+      const errorMessage = err.message || "An error occurred while generating ideas.";
+      if (errorMessage.includes("rate limit") || errorMessage.includes("429")) {
+        setError("API 요청 한도에 도달했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setGeneratingIdeas(false);
     }
