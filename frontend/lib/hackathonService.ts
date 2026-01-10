@@ -19,15 +19,8 @@ export const researchHackathon = async (
   hackathonUrl: string
 ): Promise<HackathonInfo> => {
   if (!openai) {
-    // Mock response for testing
-    return {
-      title: "Sample Hackathon",
-      description: "A hackathon focused on innovation",
-      tracks: ["AI/ML", "Web3", "FinTech"],
-      requirements: ["Build a working prototype", "Submit a demo video"],
-      background: "This hackathon aims to foster innovation...",
-      themes: ["Innovation", "Technology", "Social Impact"],
-    };
+    console.error("OpenAI API key is not set. Please set OPENAI_API_KEY environment variable.");
+    throw new Error("OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable in Vercel dashboard.");
   }
 
   try {
@@ -63,7 +56,19 @@ If you cannot access the URL directly, use your knowledge to infer likely hackat
     });
 
     const content = completion.choices[0]?.message?.content || "{}";
-    const hackathonInfo = JSON.parse(content);
+    let hackathonInfo;
+    try {
+      hackathonInfo = JSON.parse(content);
+    } catch (parseError) {
+      // Try to extract JSON from markdown code blocks
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        hackathonInfo = JSON.parse(jsonMatch[0]);
+      } else {
+        console.error("Failed to parse hackathon info:", content);
+        throw new Error("Failed to parse hackathon information from AI response.");
+      }
+    }
 
     return hackathonInfo as HackathonInfo;
   } catch (error) {
@@ -77,15 +82,8 @@ export const generateHackathonIdeas = async (
   count: number = 10
 ): Promise<any[]> => {
   if (!openai) {
-    return Array.from({ length: Math.min(count, 5) }, (_, i) => ({
-      id: i + 1,
-      title: `Hackathon Idea ${i + 1}`,
-      description: `An innovative solution for ${hackathonInfo.title}`,
-      tracks: hackathonInfo.tracks,
-      alignment: "High alignment with hackathon themes",
-      features: ["Feature 1", "Feature 2"],
-      techStack: ["Tech 1", "Tech 2"],
-    }));
+    console.error("OpenAI API key is not set. Please set OPENAI_API_KEY environment variable.");
+    throw new Error("OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable in Vercel dashboard.");
   }
 
   try {
@@ -125,6 +123,7 @@ Return a JSON array of ideas in this format:
         { role: "user", content: prompt },
       ],
       temperature: 0.8,
+      response_format: { type: "json_object" },
     });
 
     const content = completion.choices[0]?.message?.content || '{"ideas": []}';
@@ -132,15 +131,24 @@ Return a JSON array of ideas in this format:
     try {
       result = JSON.parse(content);
     } catch (parseError) {
-      // Try to extract JSON array
-      const arrayMatch = content.match(/\[[\s\S]*\]/);
-      if (arrayMatch) {
-        result = { ideas: JSON.parse(arrayMatch[0]) };
+      console.error("JSON parse error:", parseError, "Content:", content);
+      // Try to extract JSON object
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          result = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          throw new Error("Failed to parse ideas response from AI.");
+        }
       } else {
-        throw new Error("Failed to parse ideas response");
+        throw new Error("Failed to parse ideas response from AI.");
       }
     }
     const ideas = result.ideas || (Array.isArray(result) ? result : []);
+    
+    if (!Array.isArray(ideas) || ideas.length === 0) {
+      throw new Error("No ideas were generated. Please try again.");
+    }
 
     return ideas.map((idea: any, index: number) => ({
       id: index + 1,

@@ -13,6 +13,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not set in environment variables");
+      return NextResponse.json(
+        {
+          error: "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable in Vercel dashboard.",
+        },
+        { status: 500 }
+      );
+    }
+
     const hackathonInfo = await researchHackathon(url);
 
     return NextResponse.json({ hackathonInfo });
@@ -36,6 +47,17 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         { error: "Hackathon information is required." },
         { status: 400 }
+      );
+    }
+
+    // Check if OpenAI API key is configured
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("OPENAI_API_KEY is not set in environment variables");
+      return NextResponse.json(
+        {
+          error: "OpenAI API key is not configured. Please set OPENAI_API_KEY environment variable in Vercel dashboard.",
+        },
+        { status: 500 }
       );
     }
 
