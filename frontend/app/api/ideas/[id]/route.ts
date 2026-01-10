@@ -21,10 +21,12 @@ export async function GET(
 
     return NextResponse.json(idea);
   } catch (error) {
-    return NextResponse.json(
-      { error: "아이디어를 가져오는 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+      return NextResponse.json(
+        {
+          error: error.message || "An error occurred while fetching the idea.",
+        },
+        { status: 500 }
+      );
   }
 }
 
@@ -39,7 +41,7 @@ export async function POST(
 
     if (!idea) {
       return NextResponse.json(
-        { error: "아이디어 정보를 제공해주세요." },
+        { error: "Please provide idea information." },
         { status: 400 }
       );
     }
@@ -53,9 +55,11 @@ export async function POST(
     });
   } catch (error) {
     console.error("아이디어 점수화 오류:", error);
-    return NextResponse.json(
-      { error: "아이디어 점수화 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+      return NextResponse.json(
+        {
+          error: error.message || "An error occurred while scoring the idea.",
+        },
+        { status: 500 }
+      );
   }
 }

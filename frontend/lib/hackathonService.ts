@@ -99,18 +99,20 @@ Background: ${hackathonInfo.background}
 Themes: ${hackathonInfo.themes.join(", ")}
 
 Return a JSON array of ideas in this format:
-[
-  {
-    "title": "Idea name",
-    "description": "One sentence description",
-    "tracks": ["Relevant track"],
-    "alignment": "How well it aligns with hackathon themes",
-    "features": ["Key feature 1", "Key feature 2"],
-    "techStack": ["Technology 1", "Technology 2"],
-    "painPoints": ["Problem it solves 1", "Problem it solves 2"],
-    "implementation": "Brief implementation approach"
-  }
-]`;
+{
+  "ideas": [
+    {
+      "title": "Idea name",
+      "description": "One sentence description",
+      "tracks": ["Relevant track"],
+      "alignment": "How well it aligns with hackathon themes",
+      "features": ["Key feature 1", "Key feature 2"],
+      "techStack": ["Technology 1", "Technology 2"],
+      "painPoints": ["Problem it solves 1", "Problem it solves 2"],
+      "implementation": "Brief implementation approach"
+    }
+  ]
+}`;
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
@@ -123,12 +125,22 @@ Return a JSON array of ideas in this format:
         { role: "user", content: prompt },
       ],
       temperature: 0.8,
-      response_format: { type: "json_object" },
     });
 
     const content = completion.choices[0]?.message?.content || '{"ideas": []}';
-    const result = JSON.parse(content);
-    const ideas = result.ideas || [];
+    let result;
+    try {
+      result = JSON.parse(content);
+    } catch (parseError) {
+      // Try to extract JSON array
+      const arrayMatch = content.match(/\[[\s\S]*\]/);
+      if (arrayMatch) {
+        result = { ideas: JSON.parse(arrayMatch[0]) };
+      } else {
+        throw new Error("Failed to parse ideas response");
+      }
+    }
+    const ideas = result.ideas || (Array.isArray(result) ? result : []);
 
     return ideas.map((idea: any, index: number) => ({
       id: index + 1,

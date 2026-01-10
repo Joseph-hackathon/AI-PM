@@ -18,9 +18,11 @@ export async function GET(
 
     return NextResponse.json(document);
   } catch (error) {
-    return NextResponse.json(
-      { error: "문서를 가져오는 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+      return NextResponse.json(
+        {
+          error: error.message || "An error occurred while fetching the document.",
+        },
+        { status: 500 }
+      );
   }
 }
