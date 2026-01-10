@@ -2,36 +2,32 @@
 
 ## 문제: `cd frontend && npm install` 오류
 
-Vercel에서 배포 시 `Error: Command "cd frontend && npm install" exited with 1` 오류가 발생하는 경우:
+Vercel에서 배포 시 `Error: Command "cd frontend && npm install" exited with 1` 또는 `sh: line 1: cd: frontend: No such file or directory` 오류가 발생하는 경우:
 
 ## 해결 방법
 
-### 방법 1: Vercel 대시보드에서 Root Directory 설정 (권장)
+### 방법 1: Vercel 대시보드에서 설정 (필수)
 
-1. Vercel 대시보드에서 프로젝트 설정으로 이동
-2. **Settings** → **General** → **Root Directory** 섹션으로 이동
-3. **Edit** 클릭
-4. Root Directory를 `frontend`로 설정
-5. **Save** 클릭
-6. 다시 배포
+1. **Vercel 대시보드**에서 프로젝트 선택
+2. **Settings** → **General** 이동
+3. **Root Directory** 섹션:
+   - "Override" 클릭
+   - `frontend` 입력
+   - **Save** 클릭
+4. **Build & Development Settings** 섹션:
+   - **Build Command**: `npm run build` (또는 비워두기 - 자동 감지)
+   - **Output Directory**: `.next` (또는 비워두기 - 자동 감지)
+   - **Install Command**: `npm install` (또는 비워두기 - 자동 감지)
+   - **Development Command**: `npm run dev` (또는 비워두기 - 자동 감지)
+   - **Save** 클릭
 
-이렇게 설정하면 Vercel은 자동으로 `frontend` 디렉토리에서 작업을 시작하므로 `cd frontend` 명령이 필요 없습니다.
+### 방법 2: frontend/vercel.json 파일 사용 (권장)
 
-### 방법 2: vercel.json 파일 사용 (선택사항)
+`frontend/vercel.json` 파일이 이미 생성되어 있습니다. 이 파일은 Vercel이 올바른 빌드 명령을 사용하도록 보장합니다.
 
-만약 vercel.json 파일을 사용하고 싶다면, 프로젝트 루트에 다음 내용으로 생성:
-
-```json
-{
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": ".next",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "framework": "nextjs"
-}
-```
-
-**중요**: 이 경우 Vercel 대시보드에서 Root Directory를 `frontend`로 설정해야 합니다.
+**중요**: 
+- Vercel 대시보드에서 **Root Directory를 `frontend`로 설정**해야 합니다.
+- Root Directory를 설정하면 Vercel은 자동으로 `frontend` 디렉토리에서 작업을 시작하므로 `cd frontend` 명령이 필요 없습니다.
 
 ## 확인 사항
 

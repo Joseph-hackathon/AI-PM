@@ -77,9 +77,13 @@ See [docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md) for detailed deployment guide
 **Quick Deploy:**
 1. Push project to GitHub
 2. Login to [Vercel](https://vercel.com) and connect project
-3. Set Root Directory to `frontend`
-4. Add environment variable `OPENAI_API_KEY`
+3. **Important**: Set Root Directory to `frontend` in Vercel dashboard:
+   - Settings → General → Root Directory → Override → Enter `frontend` → Save
+4. Add environment variable `OPENAI_API_KEY`:
+   - Settings → Environment Variables → Add `OPENAI_API_KEY`
 5. Deploy!
+
+**Troubleshooting**: If you see `cd frontend: No such file or directory` error, see [docs/VERCEL_FIX.md](docs/VERCEL_FIX.md)
 
 ## 📄 License
 
