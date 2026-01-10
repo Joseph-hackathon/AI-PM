@@ -24,6 +24,7 @@ export const researchHackathon = async (
   }
 
   try {
+    console.log("Calling OpenAI API for hackathon research...");
     const prompt = `You are a hackathon research assistant. Analyze the following hackathon URL and extract key information:
 URL: ${hackathonUrl}
 
@@ -42,38 +43,68 @@ Please provide a JSON object with the following structure:
 If you cannot access the URL directly, use your knowledge to infer likely hackathon information based on the URL pattern or domain. Return only valid JSON.`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are an expert at analyzing hackathon information. Extract key details from hackathon pages including tracks, requirements, themes, and background.",
+            "You are an expert at analyzing hackathon information. Extract key details from hackathon pages including tracks, requirements, themes, and background. Always return valid JSON.",
         },
         { role: "user", content: prompt },
       ],
       temperature: 0.3,
       response_format: { type: "json_object" },
+      max_tokens: 2000,
     });
+    
+    console.log("OpenAI API call completed");
 
     const content = completion.choices[0]?.message?.content || "{}";
+    console.log("Received content from OpenAI:", content.substring(0, 200));
+    
     let hackathonInfo;
     try {
       hackathonInfo = JSON.parse(content);
     } catch (parseError) {
+      console.error("JSON parse error:", parseError);
       // Try to extract JSON from markdown code blocks
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        hackathonInfo = JSON.parse(jsonMatch[0]);
+        try {
+          hackathonInfo = JSON.parse(jsonMatch[0]);
+        } catch (e) {
+          console.error("Failed to parse extracted JSON:", e);
+          throw new Error("Failed to parse hackathon information from AI response.");
+        }
       } else {
-        console.error("Failed to parse hackathon info:", content);
+        console.error("Failed to find JSON in content:", content);
         throw new Error("Failed to parse hackathon information from AI response.");
       }
     }
 
+    // Validate required fields
+    if (!hackathonInfo.title || !hackathonInfo.description || !hackathonInfo.tracks || !hackathonInfo.requirements) {
+      console.error("Missing required fields in hackathon info:", hackathonInfo);
+      throw new Error("Incomplete hackathon information received from AI.");
+    }
+
+    console.log("Successfully parsed hackathon info");
     return hackathonInfo as HackathonInfo;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Hackathon research error:", error);
-    throw new Error("Failed to research hackathon information.");
+    console.error("Error type:", error?.constructor?.name);
+    console.error("Error message:", error?.message);
+    console.error("Error stack:", error?.stack);
+    
+    if (error?.status === 401 || error?.message?.includes("API key")) {
+      throw new Error("Invalid OpenAI API key. Please check your OPENAI_API_KEY environment variable.");
+    } else if (error?.status === 429) {
+      throw new Error("OpenAI API rate limit exceeded. Please try again later.");
+    } else if (error?.status === 500) {
+      throw new Error("OpenAI API server error. Please try again later.");
+    } else {
+      throw new Error(error?.message || "Failed to research hackathon information. Please try again.");
+    }
   }
 };
 
@@ -112,19 +143,23 @@ Return a JSON array of ideas in this format:
   ]
 }`;
 
+    console.log("Calling OpenAI API for idea generation...");
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
           content:
-            "You are an expert at generating hackathon project ideas. Create innovative, feasible ideas that align with hackathon themes and requirements.",
+            "You are an expert at generating hackathon project ideas. Create innovative, feasible ideas that align with hackathon themes and requirements. Always return valid JSON with an 'ideas' array.",
         },
         { role: "user", content: prompt },
       ],
       temperature: 0.8,
       response_format: { type: "json_object" },
+      max_tokens: 3000,
     });
+    
+    console.log("OpenAI API call for ideas completed");
 
     const content = completion.choices[0]?.message?.content || '{"ideas": []}';
     let result;
@@ -154,8 +189,20 @@ Return a JSON array of ideas in this format:
       id: index + 1,
       ...idea,
     }));
-  } catch (error) {
+  } catch (error: any) {
     console.error("Idea generation error:", error);
-    throw new Error("Failed to generate hackathon ideas.");
+    console.error("Error type:", error?.constructor?.name);
+    console.error("Error message:", error?.message);
+    console.error("Error stack:", error?.stack);
+    
+    if (error?.status === 401 || error?.message?.includes("API key")) {
+      throw new Error("Invalid OpenAI API key. Please check your OPENAI_API_KEY environment variable.");
+    } else if (error?.status === 429) {
+      throw new Error("OpenAI API rate limit exceeded. Please try again later.");
+    } else if (error?.status === 500) {
+      throw new Error("OpenAI API server error. Please try again later.");
+    } else {
+      throw new Error(error?.message || "Failed to generate hackathon ideas. Please try again.");
+    }
   }
 };

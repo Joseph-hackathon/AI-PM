@@ -14,7 +14,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
       console.error("OPENAI_API_KEY is not set in environment variables");
       return NextResponse.json(
         {
@@ -24,14 +25,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log("Starting hackathon research for URL:", url);
     const hackathonInfo = await researchHackathon(url);
+    console.log("Hackathon research completed successfully");
 
     return NextResponse.json({ hackathonInfo });
   } catch (error: any) {
     console.error("Hackathon research error:", error);
+    console.error("Error stack:", error.stack);
     return NextResponse.json(
       {
-        error: error.message || "Failed to research hackathon information.",
+        error: error.message || "Failed to research hackathon information. Please check the URL and try again.",
       },
       { status: 500 }
     );
