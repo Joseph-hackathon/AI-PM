@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     if (!message) {
       return NextResponse.json(
-        { error: "메시지를 제공해주세요." },
+        { error: "Please provide a message." },
         { status: 400 }
       );
     }
@@ -23,10 +23,12 @@ export async function POST(request: NextRequest) {
       response,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error("채팅 오류:", error);
+  } catch (error: any) {
+    console.error("Chat error:", error);
     return NextResponse.json(
-      { error: "채팅 응답 생성 중 오류가 발생했습니다." },
+      {
+        error: error.message || "An error occurred while generating the chat response.",
+      },
       { status: 500 }
     );
   }

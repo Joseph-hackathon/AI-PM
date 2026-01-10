@@ -36,16 +36,22 @@ export default function GenerateIdeasPage() {
     }
 
     setLoading(true);
+    setGeneratedIdeas([]);
     try {
       const response = await ideasApi.generate({
         trends: selectedTrends,
         count,
         context: context || undefined,
       });
-      setGeneratedIdeas(response.data.ideas || []);
-    } catch (error) {
-      console.error("아이디어 생성 오류:", error);
-      alert("An error occurred while generating ideas.");
+      if (response.data && response.data.ideas) {
+        setGeneratedIdeas(response.data.ideas);
+      } else {
+        throw new Error("Invalid response format");
+      }
+    } catch (error: any) {
+      console.error("Idea generation error:", error);
+      const errorMessage = error.response?.data?.error || error.message || "An error occurred while generating ideas.";
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     if (!trends || !Array.isArray(trends) || trends.length === 0) {
       return NextResponse.json(
-        { error: "트렌드 배열을 제공해주세요." },
+        { error: "Please provide an array of trends." },
         { status: 400 }
       );
     }
@@ -16,10 +16,12 @@ export async function POST(request: NextRequest) {
     const ideas = await generateIdeasWithAI(trends, count, context);
 
     return NextResponse.json({ ideas, count: ideas.length });
-  } catch (error) {
-    console.error("아이디어 생성 오류:", error);
+  } catch (error: any) {
+    console.error("Idea generation error:", error);
     return NextResponse.json(
-      { error: "아이디어 생성 중 오류가 발생했습니다." },
+      {
+        error: error.message || "An error occurred while generating ideas.",
+      },
       { status: 500 }
     );
   }

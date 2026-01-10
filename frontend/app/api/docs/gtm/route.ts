@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     if (!productConcept) {
       return NextResponse.json(
-        { error: "제품 개념을 제공해주세요." },
+        { error: "Please provide a product concept." },
         { status: 400 }
       );
     }
@@ -16,10 +16,12 @@ export async function POST(request: NextRequest) {
     const gtm = await generateGTMWithAI(productConcept, targetMarket, context);
 
     return NextResponse.json({ gtm, generatedAt: new Date().toISOString() });
-  } catch (error) {
-    console.error("GTM 생성 오류:", error);
+  } catch (error: any) {
+    console.error("GTM generation error:", error);
     return NextResponse.json(
-      { error: "GTM 생성 중 오류가 발생했습니다." },
+      {
+        error: error.message || "An error occurred while generating the GTM plan.",
+      },
       { status: 500 }
     );
   }

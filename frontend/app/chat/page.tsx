@@ -20,8 +20,8 @@ export default function ChatPage() {
   ]);
   const [input, setInput] = useState("");
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage: ChatMessage = {
       id: messages.length + 1,
@@ -29,18 +29,60 @@ export default function ChatPage() {
       content: input,
     };
 
-    setMessages([...messages, userMessage]);
+    const currentInput = input;
+    setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const aiMessage: ChatMessage = {
-        id: messages.length + 2,
-        role: "assistant",
-        content: "Great question! Let me analyze this for you. (In the actual implementation, responses are generated via OpenAI API.)",
-      };
-      setMessages((prev) => [...prev, userMessage, aiMessage]);
-    }, 1000);
+    // Add loading message
+    const loadingMessage: ChatMessage = {
+      id: messages.length + 2,
+      role: "assistant",
+      content: "Thinking...",
+    };
+    setMessages((prev) => [...prev, loadingMessage]);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: currentInput,
+          conversationHistory: messages,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to get response");
+      }
+
+      const data = await response.json();
+      
+      // Remove loading message and add actual response
+      setMessages((prev) => {
+        const withoutLoading = prev.slice(0, -1);
+        const aiMessage: ChatMessage = {
+          id: prev.length + 1,
+          role: "assistant",
+          content: data.response || "I apologize, but I couldn't generate a response.",
+        };
+        return [...withoutLoading, aiMessage];
+      });
+    } catch (error: any) {
+      console.error("Chat error:", error);
+      setMessages((prev) => {
+        const withoutLoading = prev.slice(0, -1);
+        const errorMessage: ChatMessage = {
+          id: prev.length + 1,
+          role: "assistant",
+          content: error.message || "Sorry, an error occurred. Please try again.",
+        };
+        return [...withoutLoading, errorMessage];
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -101,15 +143,21 @@ export default function ChatPage() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSend()}
+            onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
+            disabled={isLoading}
             placeholder="Ask about product strategy..."
             className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={handleSend}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={isLoading || !input.trim()}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            <Send className="w-5 h-5" />
+            {isLoading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Send className="w-5 h-5" />
+            )}
           </button>
         </div>
       </div>

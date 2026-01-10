@@ -67,7 +67,27 @@ Return each idea as a JSON array in the following format:
     });
 
     const content = completion.choices[0]?.message?.content || "[]";
-    const ideas = JSON.parse(content);
+    let ideas;
+    try {
+      ideas = JSON.parse(content);
+      if (!Array.isArray(ideas)) {
+        // If response is wrapped in an object, try to extract the array
+        if (ideas.ideas && Array.isArray(ideas.ideas)) {
+          ideas = ideas.ideas;
+        } else {
+          throw new Error("Invalid response format");
+        }
+      }
+    } catch (parseError) {
+      console.error("JSON parse error:", parseError);
+      // Try to extract JSON from markdown code blocks
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (jsonMatch) {
+        ideas = JSON.parse(jsonMatch[0]);
+      } else {
+        throw new Error("Failed to parse AI response");
+      }
+    }
 
     return ideas.map((idea: any, index: number) => ({
       id: index + 1,

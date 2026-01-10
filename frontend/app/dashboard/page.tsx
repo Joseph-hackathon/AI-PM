@@ -87,6 +87,12 @@ export default function Dashboard() {
               >
                 Chat with AI Assistant
               </Link>
+              <Link
+                href="/hackathon"
+                className="block p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors"
+              >
+                Hackathon Research
+              </Link>
             </div>
           </div>
         </div>

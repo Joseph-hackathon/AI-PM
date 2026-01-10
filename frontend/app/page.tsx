@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { TrendingUp, Lightbulb, FileText, MessageSquare, BarChart3 } from "lucide-react";
+import { TrendingUp, Lightbulb, FileText, MessageSquare, BarChart3, Link as LinkIcon } from "lucide-react";
 
 export default function Home() {
   return (
@@ -44,6 +44,12 @@ export default function Home() {
             title="Execution Dashboard"
             description="Track product progress and analyze it in relation to trends"
             href="/dashboard"
+          />
+          <FeatureCard
+            icon={<LinkIcon className="w-8 h-8" />}
+            title="Hackathon Research"
+            description="Research hackathons and generate aligned project ideas"
+            href="/hackathon"
           />
         </div>
 

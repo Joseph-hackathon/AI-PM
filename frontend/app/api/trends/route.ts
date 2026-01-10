@@ -81,9 +81,12 @@ export async function GET(request: NextRequest) {
       trends: filteredTrends.slice(0, limit),
       total: filteredTrends.length,
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Trends API error:", error);
     return NextResponse.json(
-      { error: "트렌드를 가져오는 중 오류가 발생했습니다." },
+      {
+        error: error.message || "An error occurred while fetching trends.",
+      },
       { status: 500 }
     );
   }
