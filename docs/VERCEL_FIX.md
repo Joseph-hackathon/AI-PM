@@ -21,13 +21,14 @@ Vercel에서 배포 시 `Error: Command "cd frontend && npm install" exited with
    - **Development Command**: `npm run dev` (또는 비워두기 - 자동 감지)
    - **Save** 클릭
 
-### 방법 2: frontend/vercel.json 파일 사용 (권장)
+### 방법 2: Vercel 자동 감지 사용 (권장)
 
-`frontend/vercel.json` 파일이 이미 생성되어 있습니다. 이 파일은 Vercel이 올바른 빌드 명령을 사용하도록 보장합니다.
+Vercel은 Next.js를 자동으로 감지하므로 `vercel.json` 파일이 필요하지 않습니다.
 
 **중요**: 
 - Vercel 대시보드에서 **Root Directory를 `frontend`로 설정**해야 합니다.
-- Root Directory를 설정하면 Vercel은 자동으로 `frontend` 디렉토리에서 작업을 시작하므로 `cd frontend` 명령이 필요 없습니다.
+- Root Directory를 설정하면 Vercel은 자동으로 `frontend` 디렉토리에서 작업을 시작합니다.
+- Next.js를 자동으로 감지하여 빌드 명령을 생성합니다.
 
 ## 확인 사항
 
