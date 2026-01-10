@@ -16,8 +16,8 @@ const mockTrends = [
     title: "Onchain Credit Markets",
     category: "DeFi",
     impact: "high",
-    description: "온체인 신용 시장과 오프체인 신호의 융합",
-    opportunities: ["AI 에이전트 기반 신용 평가", "무담보 대출 풀", "평판 오라클"],
+      description: "Fusion of onchain credit markets and offchain signals",
+      opportunities: ["AI agent-based credit scoring", "Unsecured lending pools", "Reputation oracles"],
     sources: ["Coinbase Ventures 2026"],
     createdAt: new Date().toISOString(),
   },
@@ -26,8 +26,8 @@ const mockTrends = [
     title: "Privacy Infrastructure",
     category: "Infrastructure",
     impact: "medium",
-    description: "프라이버시 보호를 위한 인프라 구축",
-    opportunities: ["제로지식 증명", "익명 트랜잭션", "데이터 보호 솔루션"],
+      description: "Infrastructure for privacy protection",
+      opportunities: ["Zero-knowledge proofs", "Anonymous transactions", "Data protection solutions"],
     sources: ["a16z Crypto 2026"],
     createdAt: new Date().toISOString(),
   },
@@ -36,8 +36,8 @@ const mockTrends = [
     title: "AI Agents",
     category: "AI",
     impact: "high",
-    description: "AI 에이전트가 블록체인과 상호작용하며 자율적으로 작동",
-    opportunities: ["자동화된 DeFi 전략", "스마트 계약 관리", "크로스체인 브릿징"],
+      description: "AI agents interacting with blockchain and operating autonomously",
+      opportunities: ["Automated DeFi strategies", "Smart contract management", "Cross-chain bridging"],
     sources: ["a16z Crypto 2026", "Coinbase Ventures 2026"],
     createdAt: new Date().toISOString(),
   },
@@ -53,16 +53,18 @@ export async function GET(
 
     if (!trend) {
       return NextResponse.json(
-        { error: "트렌드를 찾을 수 없습니다." },
+        { error: "Trend not found." },
         { status: 404 }
       );
     }
 
     return NextResponse.json(trend);
   } catch (error) {
-    return NextResponse.json(
-      { error: "트렌드를 가져오는 중 오류가 발생했습니다." },
-      { status: 500 }
-    );
+      return NextResponse.json(
+        {
+          error: error.message || "An error occurred while fetching the trend.",
+        },
+        { status: 500 }
+      );
   }
 }

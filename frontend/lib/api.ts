@@ -61,4 +61,11 @@ export const chatApi = {
   }) => api.post("/chat", data),
 };
 
+// Hackathon API
+export const hackathonApi = {
+  research: (url: string) => api.post("/hackathon/research", { url }),
+  generateIdeas: (hackathonInfo: any, count?: number) =>
+    api.put("/hackathon/research", { hackathonInfo, count }),
+};
+
 export default api;

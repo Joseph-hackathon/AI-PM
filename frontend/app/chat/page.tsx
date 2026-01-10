@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Send, Bot, User } from "lucide-react";
+import { ArrowLeft, Send, Bot, User, Loader2 } from "lucide-react";
 
 interface ChatMessage {
   id: number;
@@ -19,6 +19,7 @@ export default function ChatPage() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
